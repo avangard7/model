@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #pngTuber {
+            width: 400px;
+            height: auto;
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <img id="pngTuber" src="idle.png">
+    
+    <script>
+        const pngTuber = document.getElementById('pngTuber');
+        let isTalking = false;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+
+        // Функция для инициализации аудио
+        async function initAudio() {
+            try {
+                // Запрос разрешения на микрофон
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: false
+                    } 
+                });
+                
+                // Создаем аудиоконтекст
+                audioContext = new AudioContext();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                
+                // Настройки анализатора
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.8;
+                
+                // Подключаем
+                microphone.connect(analyser);
+                
+                // Запускаем анализ
+                analyzeAudio();
+                
+            } catch (error) {
+                console.error('Ошибка доступа к микрофону:', error);
+                // Фолбэк - имитация звука для тестирования
+                simulateAudio();
+            }
+        }
+
+        // Функция анализа аудио
+        function analyzeAudio() {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            function checkAudio() {
+                analyser.getByteFrequencyData(dataArray);
+                
+                // Вычисляем средний уровень звука
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                }
+                const average = sum / dataArray.length;
+                
+                // Порог чувствительности (можно регулировать)
+                const threshold = 20;
+                
+                // Реакция на звук
+                if (average > threshold && !isTalking) {
+                    // Есть звук - поднимаем вверх
+                    pngTuber.style.transform = 'translateY(-10px)';
+                    pngTuber.src = 'talking.png';
+                    isTalking = true;
+                } else if (average <= threshold && isTalking) {
+                    // Нет звука - возвращаем на место
+                    pngTuber.style.transform = 'translateY(0px)';
+                    pngTuber.src = 'idle.png';
+                    isTalking = false;
+                }
+                
+                requestAnimationFrame(checkAudio);
+            }
+            
+            checkAudio();
+        }
+
+        // Функция для тестирования без микрофона
+        function simulateAudio() {
+            let simulatedTalking = false;
+            
+            setInterval(() => {
+                // Случайным образом имитируем речь
+                if (Math.random() > 0.7 && !simulatedTalking) {
+                    pngTuber.style.transform = 'translateY(-10px)';
+                    pngTuber.src = 'talking.png';
+                    simulatedTalking = true;
+                } else if (Math.random() > 0.8 && simulatedTalking) {
+                    pngTuber.style.transform = 'translateY(0px)';
+                    pngTuber.src = 'idle.png';
+                    simulatedTalking = false;
+                }
+            }, 500);
+        }
+
+        // Запускаем при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ждем немного перед инициализацией
+            setTimeout(initAudio, 1000);
+        });
+
+        // Обработчик клика для ручной активации (требуется в некоторых браузерах)
+        document.body.addEventListener('click', function() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+    </script>
+</body>
+</html> 
