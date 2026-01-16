@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <img id="pngTuber" src="idle.png">
+    <img id="pngTuber" src="talking.png">
     
     <script>
         const pngTuber = document.getElementById('pngTuber');
@@ -80,7 +80,7 @@
                 } else if (average <= threshold && isTalking) {
                     // Нет звука - возвращаем на место
                     pngTuber.style.transform = 'translateY(0px)';
-                    pngTuber.src = 'idle.png';
+                    pngTuber.src = 'talking.png';
                     isTalking = false;
                 }
                 
@@ -102,7 +102,7 @@
                     simulatedTalking = true;
                 } else if (Math.random() > 0.8 && simulatedTalking) {
                     pngTuber.style.transform = 'translateY(0px)';
-                    pngTuber.src = 'idle.png';
+                    pngTuber.src = 'talking.png';
                     simulatedTalking = false;
                 }
             }, 500);
