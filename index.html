@@ -5,12 +5,43 @@
         #pngTuber {
             width: 400px;
             height: auto;
-            position: relative;
+            /* Изменено: перемещаем в правый нижний угол */
+            position: fixed; /* Фиксируем позицию */
+            right: 20px; /* Отступ от правого края */
+            bottom: 20px; /* Отступ от нижнего края */
+            z-index: 1000; /* Поверх других элементов */
             transition: transform 0.2s ease;
+        }
+        
+        /* Для адаптивности на мобильных устройствах */
+        @media (max-width: 768px) {
+            #pngTuber {
+                width: 250px; /* Меньше на мобилках */
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+        
+        /* Стиль для тестовой кнопки (опционально) */
+        .test-button {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            padding: 10px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
+    <!-- Тестовая кнопка для проверки (можно удалить) -->
+    <button class="test-button" onclick="testAnimation()">Тест анимации</button>
+    
+    <!-- PNG моделька -->
     <img id="pngTuber" src="talking.png">
     
     <script>
@@ -47,6 +78,8 @@
                 // Запускаем анализ
                 analyzeAudio();
                 
+                console.log('Микрофон активирован. PNG моделька в правом нижнем углу.');
+                
             } catch (error) {
                 console.error('Ошибка доступа к микрофону:', error);
                 // Фолбэк - имитация звука для тестирования
@@ -74,12 +107,12 @@
                 // Реакция на звук
                 if (average > threshold && !isTalking) {
                     // Есть звук - поднимаем вверх
-                    pngTuber.style.transform = 'translateY(-10px)';
+                    pngTuber.style.transform = 'translateY(-20px) scale(1.05)';
                     pngTuber.src = 'talking.png';
                     isTalking = true;
                 } else if (average <= threshold && isTalking) {
                     // Нет звука - возвращаем на место
-                    pngTuber.style.transform = 'translateY(0px)';
+                    pngTuber.style.transform = 'translateY(0px) scale(1)';
                     pngTuber.src = 'talking.png';
                     isTalking = false;
                 }
@@ -97,29 +130,49 @@
             setInterval(() => {
                 // Случайным образом имитируем речь
                 if (Math.random() > 0.7 && !simulatedTalking) {
-                    pngTuber.style.transform = 'translateY(-10px)';
+                    pngTuber.style.transform = 'translateY(-20px) scale(1.05)';
                     pngTuber.src = 'talking.png';
                     simulatedTalking = true;
+                    console.log('Тест: говорим');
                 } else if (Math.random() > 0.8 && simulatedTalking) {
-                    pngTuber.style.transform = 'translateY(0px)';
+                    pngTuber.style.transform = 'translateY(0px) scale(1)';
                     pngTuber.src = 'talking.png';
                     simulatedTalking = false;
+                    console.log('Тест: молчим');
                 }
             }, 500);
+        }
+
+        // Функция теста анимации (для кнопки)
+        function testAnimation() {
+            pngTuber.style.transform = 'translateY(-20px) scale(1.05)';
+            setTimeout(() => {
+                pngTuber.style.transform = 'translateY(0px) scale(1)';
+            }, 1000);
+            console.log('Тест анимации выполнен');
         }
 
         // Запускаем при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             // Ждем немного перед инициализацией
             setTimeout(initAudio, 1000);
+            
+            // Информация о расположении
+            console.log('PNG моделька расположена в правом нижнем углу экрана');
         });
 
         // Обработчик клика для ручной активации (требуется в некоторых браузерах)
         document.body.addEventListener('click', function() {
             if (audioContext && audioContext.state === 'suspended') {
                 audioContext.resume();
+                console.log('Аудио контекст возобновлен');
             }
+        });
+        
+        // Обработчик изменения размера окна (для отладки)
+        window.addEventListener('resize', function() {
+            console.log('Размер окна:', window.innerWidth, 'x', window.innerHeight);
         });
     </script>
 </body>
-</html> 
+</html>
